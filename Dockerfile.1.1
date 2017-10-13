@@ -1,0 +1,28 @@
+FROM mapbox/gl-native:travis
+
+# Install compiler
+RUN apt-get -y install gdb g++-5 gcc-5 libllvm3.4
+
+# Node
+ENV NVM_DIR /usr/local/nvm
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash
+ENV NODE_VERSION v4.8.4
+RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
+
+ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/versions/node/$NODE_VERSION/bin:$PATH
+
+WORKDIR /usr/src/app
+# Install app dependencies
+COPY package.json .
+# For npm@5 or later, copy package-lock.json as well
+# COPY package.json package-lock.json ./
+
+# RUN npm install
+RUN npm install --build-from-source git://github.com/mapbox/mapbox-gl-native.git#master
+# Bundle app source
+COPY . .
+
+EXPOSE 4040
+
+CMD [ "./run.sh" ]

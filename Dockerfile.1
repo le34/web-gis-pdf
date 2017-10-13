@@ -1,0 +1,31 @@
+FROM node:argon-stretch
+# Create app directory
+RUN apt-get -qq update \
+&& DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    apt-transport-https \
+    curl \
+    unzip \
+    build-essential \
+    python \
+    libcairo2-dev \
+    libgles2-mesa-dev \
+    libgbm-dev \
+    libllvm3.9 \
+    libprotobuf-dev \
+    libxxf86vm-dev \
+    cmake \
+    xvfb
+WORKDIR /usr/src/app
+# Install app dependencies
+COPY package.json .
+# For npm@5 or later, copy package-lock.json as well
+# COPY package.json package-lock.json ./
+
+RUN npm install
+RUN npm install --build-from-source git://github.com/mapbox/mapbox-gl-native.git#master
+# Bundle app source
+COPY . .
+
+EXPOSE 4040
+
+CMD [ "./run.sh" ]
